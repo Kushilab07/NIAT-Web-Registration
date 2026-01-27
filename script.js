@@ -235,28 +235,53 @@ selects.forEach(select => {
           }
       });
 
-      // 3. FINAL SUBMIT ANIMATION & LOGIC
+            // 3. FINAL SUBMIT ANIMATION & LOGIC
       if(finalSubmitBtn) {
           finalSubmitBtn.addEventListener('click', (e) => {
             e.preventDefault();
 
-            // --- ANIMATION START ---
-            // 1. Hide the background page
+            // --- A. SETUP ANIMATION COORDINATES ---
+            // 1. Get current position of the button
+            const rect = finalSubmitBtn.getBoundingClientRect();
+            
+            // 2. Lock dimensions and position instantly so it doesn't jump
+            finalSubmitBtn.style.width = rect.width + 'px';
+            finalSubmitBtn.style.height = rect.height + 'px';
+            finalSubmitBtn.style.left = rect.left + 'px';
+            finalSubmitBtn.style.top = rect.top + 'px';
+            finalSubmitBtn.style.position = 'fixed'; // Float above everything
+            
+            // 3. Force browser to recognize the lock (Reflow)
+            void finalSubmitBtn.offsetWidth; 
+
+            // --- B. START TRANSITION ---
+            // 1. Fade out background
             document.querySelector('.main-wrapper').classList.add('page-fade-out');
             document.querySelector('.bg-pattern').style.opacity = '0';
             
-            // 2. Hide modal content except the button
+            // 2. Hide modal content
             document.querySelector('.modal-header').classList.add('modal-content-fade');
             document.querySelector('#preview-data').classList.add('modal-content-fade');
             document.querySelector('#edit-btn-action').classList.add('modal-content-fade');
             document.querySelector('.modal-content').style.background = 'transparent';
             document.querySelector('.modal-content').style.boxShadow = 'none';
 
-            // 3. Morph the button
-            finalSubmitBtn.classList.add('animate-morph');
+            // 3. Trigger the Move to Center (and shape change)
+            finalSubmitBtn.classList.add('btn-animating');
+            
+            // 4. Set final coordinates (Center Screen)
+            // We use setTimeout to allow the class to apply first
+            requestAnimationFrame(() => {
+                finalSubmitBtn.style.top = '50%';
+                finalSubmitBtn.style.left = '50%';
+                finalSubmitBtn.style.transform = 'translate(-50%, -50%)'; // Perfect center alignment
+                finalSubmitBtn.style.width = '60px';  // Shrink to circle
+                finalSubmitBtn.style.height = '60px'; // Shrink to circle
+            });
+
             finalSubmitBtn.disabled = true;
 
-            // --- DATA UPLOAD ---
+            // --- C. DATA UPLOAD ---
             const payMode = document.querySelector('input[name="payMode"]:checked').value;
             const filePromises = [
                 getFileData('photoFile'), 
@@ -292,7 +317,7 @@ selects.forEach(select => {
                 };
 
                 const serialDisplay = document.getElementById('serial-display');
-                if(serialDisplay) serialDisplay.innerHTML = '<div class="serial-loader"></div>';
+                if(serialDisplay) serialDisplay.innerHTML = 'Generating...';
 
                 const preventLeave = (e) => { e.preventDefault(); e.returnValue = ''; };
                 window.addEventListener('beforeunload', preventLeave);
@@ -301,26 +326,41 @@ selects.forEach(select => {
                     method: 'POST', body: JSON.stringify(formData)
                 }).then(response => response.json());
 
-                // Timer (2 Seconds Minimum Animation)
-                const timerPromise = new Promise(resolve => setTimeout(resolve, 2000));
+                // Timer (2.5 Seconds for animation to feel "Slow" and smooth)
+                const timerPromise = new Promise(resolve => setTimeout(resolve, 2500));
 
                 Promise.all([uploadPromise, timerPromise])
                 .then(([data, timerResult]) => {
                     window.removeEventListener('beforeunload', preventLeave);
                     
                     if(data.status === 'success') {
-                        // Success Transition
-                        previewModal.classList.add('hidden'); // Hide modal completely
-                        document.querySelector('.main-wrapper').classList.remove('page-fade-out'); // Bring back wrapper
-                        document.querySelector('.bg-pattern').style.opacity = '0.6';
+                        // --- D. SUCCESS ANIMATION ---
+                        
+                        // 1. Stop Spinner
+                        document.getElementById('final-spinner').style.display = 'none';
+                        
+                        // 2. Show Green Tick
+                        const checkIcon = document.getElementById('btn-check');
+                        checkIcon.classList.remove('hidden-check');
+                        checkIcon.classList.add('checkmark-show');
+                        
+                        // 3. Turn Button Green
+                        finalSubmitBtn.classList.add('btn-success-state');
 
-                        document.getElementById('form-section').classList.add('hidden');
-                        document.getElementById('success-view').classList.remove('hidden');
-                        if(serialDisplay) serialDisplay.textContent = data.serial;
+                        // 4. Wait 1 second to view the Tick, then switch pages
+                        setTimeout(() => {
+                            previewModal.classList.add('hidden'); // Hide modal
+                            document.querySelector('.main-wrapper').classList.remove('page-fade-out'); // Restore BG
+                            document.querySelector('.bg-pattern').style.opacity = '0.6';
+
+                            document.getElementById('form-section').classList.add('hidden');
+                            document.getElementById('success-view').classList.remove('hidden');
+                            if(serialDisplay) serialDisplay.textContent = data.serial;
+                        }, 1200);
+
                     } else {
-                        // Revert Animation on Error
                         alert("Submission Failed: " + data.message);
-                        location.reload(); // Simplest way to reset the complex animation state
+                        location.reload(); 
                     }
                 })
                 .catch(error => {
@@ -331,6 +371,8 @@ selects.forEach(select => {
             });
           });
       }
+
+
 
       function handleError(msg) {
         alert(msg);
