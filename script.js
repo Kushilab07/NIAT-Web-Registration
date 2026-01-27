@@ -140,23 +140,23 @@ selects.forEach(select => {
   });
 });
 
-         // --- SUBMIT & PREVIEW LOGIC ---
+      // --- SUBMIT & PREVIEW LOGIC ---
       const form = document.getElementById('admissionForm');
       const previewModal = document.getElementById('preview-modal');
       const previewDataBox = document.getElementById('preview-data');
       const finalSubmitBtn = document.getElementById('final-submit-btn');
       const editBtn = document.getElementById('edit-btn');
+      const editBtnAction = document.getElementById('edit-btn-action');
       const finalSpinner = document.getElementById('final-spinner');
 
-      // 1. PREVIEW BUTTON CLICK (Validates form & Opens Modal)
+      // 1. PREVIEW BUTTON CLICK
       if (form) {
           form.addEventListener('submit', function(e) {
-            e.preventDefault(); // Stop actual submit
+            e.preventDefault(); 
             
-            // Basic Validation Check
+            // Basic Validation
             if(!document.getElementById('declaration').checked) {
-                alert("Please tick the declaration box.");
-                return;
+                alert("Please tick the declaration box."); return;
             }
             if(document.getElementById('photoFile').files.length === 0) {
                 alert("Please upload your Passport Photo."); return; 
@@ -169,47 +169,64 @@ selects.forEach(select => {
                 alert("Please upload the Payment Screenshot."); return;
             }
 
-            // BUILD PREVIEW CONTENT
-            let htmlTable = `<table class="preview-table">`;
-            
-            // Helper to get course
-            let selectedCourse = "";
-            const courseSelects = document.querySelectorAll('.course-select');
-            courseSelects.forEach(s => { if(s.value) selectedCourse = s.value; });
+            // READ PAYMENT IMAGE FOR PREVIEW (Async)
+            const payFilePromise = (payMode === 'Online') ? getFileData('payFile') : Promise.resolve({data:null});
 
-            const fields = [
-                { label: "Branch", val: document.getElementById('branch-select').value },
-                { label: "Student Name", val: document.getElementsByName('studentName')[0].value },
-                { label: "Father's Name", val: document.getElementsByName('fatherName')[0].value },
-                { label: "Email", val: document.getElementById('email-field').value },
-                { label: "Contact", val: document.getElementsByName('contact')[0].value },
-                { label: "Address", val: `${document.getElementsByName('village')[0].value}, ${document.getElementsByName('district')[0].value}` },
-                { label: "Course Applied", val: selectedCourse },
-                { label: "Payment Mode", val: payMode },
-                { label: "Photo", val: document.getElementById('photoFile').files[0].name },
-                { label: "Document", val: document.getElementById('docFile').files[0].name }
-            ];
+            payFilePromise.then(payFileResult => {
+                
+                // Helper to get course
+                let selectedCourse = "";
+                document.querySelectorAll('.course-select').forEach(s => { if(s.value) selectedCourse = s.value; });
 
-            fields.forEach(field => {
-                if(field.val && field.val !== "") {
-                    htmlTable += `<tr>
-                        <td class="pt-label">${field.label}</td>
-                        <td class="pt-val">${field.val}</td>
-                    </tr>`;
-                }
+                // BUILD DETAILED FIELDS
+                const fields = [
+                    { label: "Branch", val: document.getElementById('branch-select').value },
+                    { label: "Student Name", val: document.getElementsByName('studentName')[0].value },
+                    { label: "Father's Name", val: document.getElementsByName('fatherName')[0].value },
+                    { label: "Email", val: document.getElementById('email-field').value },
+                    { label: "Contact", val: document.getElementsByName('contact')[0].value },
+                    
+                    // SPLIT ADDRESS
+                    { label: "Village/Town", val: document.getElementsByName('village')[0].value },
+                    { label: "Post Office", val: document.getElementsByName('po')[0].value },
+                    { label: "District", val: document.getElementsByName('district')[0].value },
+                    { label: "PIN Code", val: document.getElementsByName('pin')[0].value },
+                    
+                    { label: "Qualification", val: document.getElementsByName('qualification')[0].value },
+                    { label: "Activity", val: document.getElementsByName('activity')[0].value },
+                    { label: "Course Applied", val: selectedCourse },
+                    
+                    { label: "Payment Mode", val: payMode },
+                    { label: "Payment Proof", val: payFileResult.data, isImage: true } // Image Logic
+                ];
+
+                let htmlTable = `<table class="preview-table">`;
+                fields.forEach(field => {
+                    if(field.val && field.val !== "") {
+                        let content = field.val;
+                        // If it's the image field and we have data
+                        if(field.isImage && field.val) {
+                             content = `<img src="${field.val}" class="payment-proof-img" onclick="window.open('${field.val}')" title="Click to zoom">`;
+                        } else if (field.isImage) {
+                            content = "Not Applicable";
+                        }
+
+                        htmlTable += `<tr>
+                            <td class="pt-label">${field.label}</td>
+                            <td class="pt-val">${content}</td>
+                        </tr>`;
+                    }
+                });
+                htmlTable += `</table>`;
+
+                previewDataBox.innerHTML = htmlTable;
+                previewModal.classList.remove('hidden');
             });
-            htmlTable += `</table>`;
-
-            // Show Modal
-            previewDataBox.innerHTML = htmlTable;
-            previewModal.classList.remove('hidden');
           });
       }
 
-      // 2. EDIT BUTTON (Closes Modal)
-      // I added a listener for the "X" button and the "Edit" button
-      const closeBtns = [document.getElementById('edit-btn'), document.getElementById('edit-btn-action')];
-      closeBtns.forEach(btn => {
+      // 2. CLOSE MODAL LISTENERS
+      [editBtn, editBtnAction].forEach(btn => {
           if(btn) {
             btn.addEventListener('click', (e) => {
                 e.preventDefault(); 
@@ -218,20 +235,29 @@ selects.forEach(select => {
           }
       });
 
-
-      // 3. FINAL SUBMIT BUTTON (Sends Data)
+      // 3. FINAL SUBMIT ANIMATION & LOGIC
       if(finalSubmitBtn) {
           finalSubmitBtn.addEventListener('click', (e) => {
-            e.preventDefault(); // Stop button default
+            e.preventDefault();
 
-            // Disable button & Show spinner
+            // --- ANIMATION START ---
+            // 1. Hide the background page
+            document.querySelector('.main-wrapper').classList.add('page-fade-out');
+            document.querySelector('.bg-pattern').style.opacity = '0';
+            
+            // 2. Hide modal content except the button
+            document.querySelector('.modal-header').classList.add('modal-content-fade');
+            document.querySelector('#preview-data').classList.add('modal-content-fade');
+            document.querySelector('#edit-btn-action').classList.add('modal-content-fade');
+            document.querySelector('.modal-content').style.background = 'transparent';
+            document.querySelector('.modal-content').style.boxShadow = 'none';
+
+            // 3. Morph the button
+            finalSubmitBtn.classList.add('animate-morph');
             finalSubmitBtn.disabled = true;
-            if(finalSpinner) finalSpinner.classList.remove('hidden-spinner');
-            
-            // Get Data Again
+
+            // --- DATA UPLOAD ---
             const payMode = document.querySelector('input[name="payMode"]:checked').value;
-            
-            // Use Helper function for files
             const filePromises = [
                 getFileData('photoFile'), 
                 getFileData('docFile'), 
@@ -239,11 +265,8 @@ selects.forEach(select => {
             ];
 
             Promise.all(filePromises).then(files => {
-                // GET URL
                 const branchValue = document.getElementById('branch-select').value;
-                let targetURL;
-                if (branchValue === "Arikuchi") targetURL = URL_ARIKUCHI;
-                else if (branchValue === "Bagals Road") targetURL = URL_BAGALS;
+                let targetURL = (branchValue === "Arikuchi") ? URL_ARIKUCHI : URL_BAGALS;
                 
                 var formData = {
                     branch: branchValue,
@@ -271,16 +294,14 @@ selects.forEach(select => {
                 const serialDisplay = document.getElementById('serial-display');
                 if(serialDisplay) serialDisplay.innerHTML = '<div class="serial-loader"></div>';
 
-                // Prevent Refresh during upload
                 const preventLeave = (e) => { e.preventDefault(); e.returnValue = ''; };
                 window.addEventListener('beforeunload', preventLeave);
 
-                // Start Upload
                 const uploadPromise = fetch(targetURL, {
                     method: 'POST', body: JSON.stringify(formData)
                 }).then(response => response.json());
 
-                // Timer (2 Seconds)
+                // Timer (2 Seconds Minimum Animation)
                 const timerPromise = new Promise(resolve => setTimeout(resolve, 2000));
 
                 Promise.all([uploadPromise, timerPromise])
@@ -288,20 +309,24 @@ selects.forEach(select => {
                     window.removeEventListener('beforeunload', preventLeave);
                     
                     if(data.status === 'success') {
-                        // Close Modal
-                        previewModal.classList.add('hidden');
-                        
-                        // Switch to Success View
+                        // Success Transition
+                        previewModal.classList.add('hidden'); // Hide modal completely
+                        document.querySelector('.main-wrapper').classList.remove('page-fade-out'); // Bring back wrapper
+                        document.querySelector('.bg-pattern').style.opacity = '0.6';
+
                         document.getElementById('form-section').classList.add('hidden');
                         document.getElementById('success-view').classList.remove('hidden');
                         if(serialDisplay) serialDisplay.textContent = data.serial;
                     } else {
-                        handleError("Submission Failed: " + data.message);
+                        // Revert Animation on Error
+                        alert("Submission Failed: " + data.message);
+                        location.reload(); // Simplest way to reset the complex animation state
                     }
                 })
                 .catch(error => {
                     window.removeEventListener('beforeunload', preventLeave);
-                    handleError("Network Error: " + error);
+                    alert("Network Error: " + error);
+                    location.reload();
                 });
             });
           });
