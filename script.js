@@ -17,7 +17,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
       
       const loginBtn = document.getElementById('google-login-btn');
       const logoutBtnTop = document.getElementById('logout-btn-top');
-      const logoutBtnBottom = document.getElementById('logout-btn-bottom');
+      const goBackBtn = document.getElementById('go-back-btn');
 
       if(loginBtn) {
         loginBtn.addEventListener('click', () => {
@@ -25,22 +25,34 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         });
       }
 
-      const handleLogout = () => {
+            const handleLogout = () => {
         signOut(auth).then(() => {
           // 1. Hide Views
           document.getElementById('form-section').classList.add('hidden');
-          document.getElementById('success-view').classList.add('hidden');
-          document.getElementById('login-section').classList.remove('hidden');
           
-          // 2. Reset Form Data
+          const successView = document.getElementById('success-view');
+          successView.classList.add('hidden');
+          successView.classList.remove('fullscreen-success'); // Remove Fullscreen class
+          
+          document.getElementById('login-section').classList.remove('hidden');
+
+          // 2. Restore Main Wrapper (in case it was hidden by success)
+          const wrapper = document.querySelector('.main-wrapper');
+          if(wrapper) {
+             wrapper.style.display = 'block'; 
+             wrapper.classList.remove('page-fade-out'); 
+          }
+          document.querySelector('.bg-pattern').style.opacity = '0.6';
+          
+          // 3. Reset Form Data
           const form = document.getElementById('admissionForm');
           if(form) form.reset();
           
-          // 3. THIS IS THE NEW PART: Remove the blue color from all fields
+          // 4. Remove the blue color from all fields
           const filledInputs = document.querySelectorAll('.filled-input');
           filledInputs.forEach(input => input.classList.remove('filled-input'));
 
-          // 4. Reset Payment & Button States
+          // 5. Reset Payment & Button States
           document.getElementById('online-payment-section').classList.remove('hidden');
           
           // Reset file names text
@@ -58,8 +70,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
       };
 
 
+
       if(logoutBtnTop) logoutBtnTop.addEventListener('click', handleLogout);
-      if(logoutBtnBottom) logoutBtnBottom.addEventListener('click', handleLogout);
+      // Placeholder for Go Back functionality
+      if(goBackBtn) {
+          goBackBtn.addEventListener('click', () => {
+              console.log("Go Back clicked - Functionality pending");
+          });
+      }
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -353,15 +371,21 @@ selects.forEach(select => {
                         }
                         finalSubmitBtn.classList.add('btn-success-state');
 
+                        // 4. Wait 1.2s to view the Tick, then switch pages
                         setTimeout(() => {
                             previewModal.classList.add('hidden'); 
-                            document.querySelector('.main-wrapper').classList.remove('page-fade-out'); 
-                            document.querySelector('.bg-pattern').style.opacity = '0.6';
+                            
+                            // HIDE the main form wrapper completely
+                            document.querySelector('.main-wrapper').style.display = 'none';
 
-                            document.getElementById('form-section').classList.add('hidden');
-                            document.getElementById('success-view').classList.remove('hidden');
+                            // SHOW Success View in Full Screen
+                            const successView = document.getElementById('success-view');
+                            successView.classList.remove('hidden');
+                            successView.classList.add('fullscreen-success'); // Add Fullscreen class
+                            
                             if(serialDisplay) serialDisplay.textContent = data.serial;
                         }, 1200);
+
 
                     } else {
                         alert("Submission Failed: " + data.message);
