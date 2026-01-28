@@ -266,6 +266,8 @@ selects.forEach(select => {
             // 2. Blur and Fade out modal internals
             document.querySelector('.modal-header').classList.add('modal-content-fade');
             document.querySelector('#preview-data').classList.add('modal-content-fade');
+            // --- ADD THIS NEW LINE HERE ---
+            document.querySelector('.modal-actions').classList.add('modal-content-fade');
             // Select the Edit button specifically
             const editBtnEl = document.getElementById('edit-btn-action');
             if(editBtnEl) editBtnEl.classList.add('modal-content-fade');
