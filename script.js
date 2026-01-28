@@ -25,7 +25,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         });
       }
 
-            const handleLogout = () => {
+      const handleLogout = () => {
         signOut(auth).then(() => {
           // 1. Hide Views
           document.getElementById('form-section').classList.add('hidden');
@@ -69,7 +69,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
           }
           const emailF = document.getElementById('email-field');
           const nameF = document.getElementById('user-display-name');
-          if(emailF) emailF.value = user.email;
+          if(emailF) {
+              emailF.value = user.email;
+              emailF.classList.add('filled-input'); // Force Blue Color immediately
+          }
           if(nameF) nameF.innerText = user.displayName;
         } else {
           document.getElementById('login-section').classList.remove('hidden');
