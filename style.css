@@ -234,7 +234,6 @@ select { appearance: none; -webkit-appearance: none; background: white; }
 /* --- RADIO CARD COMPONENT --- */
 
 /* 1. Main Card Container */
-/*
 .radio-card {
     flex: 1; 
     border: 1px solid var(--slate-200); 
@@ -245,46 +244,46 @@ select { appearance: none; -webkit-appearance: none; background: white; }
     align-items: center; 
     justify-content: space-between;
     transition: all 0.2s ease;
-    background: white; /* Ensure background is white by default * /
+    background: white; /* Ensure background is white by default */
 }
 
-/* Hover State * /
+/* Hover State */
 .radio-card:hover { 
     border-color: var(--primary); 
     background: var(--primary-light); 
 }
 
-/* Active/Checked State (Using :has selector) * /
+/* Active/Checked State (Using :has selector) */
 .radio-card:has(input:checked) { 
     border-color: var(--primary); 
     background: var(--primary-light); 
 }
 
-/* Hide the actual HTML radio input * /
+/* Hide the actual HTML radio input */
 .radio-card input { display: none; }
 
-/* Text Content Wrapper * /
+/* Text Content Wrapper */
 .radio-content { display: flex; flex-direction: column; }
 .radio-title { font-weight: 700; font-size: 0.9rem; color: var(--slate-800); }
 .radio-sub { font-size: 0.75rem; color: var(--slate-500); }
 
-/* 2. The Check Circle (Fixed Alignment) * /
+/* 2. The Check Circle (Fixed Alignment) */
 .radio-check {
     width: 20px; 
     height: 20px; 
     border: 2px solid var(--slate-300); 
     border-radius: 50%;
     
-    /* FLEXBOX MAGIC: Centers the dot perfectly * /
+    /* FLEXBOX MAGIC: Centers the dot perfectly */
     display: flex; 
     align-items: center; 
     justify-content: center; 
     
-    flex-shrink: 0; /* Prevents circle from squishing on small screens * /
+    flex-shrink: 0; /* Prevents circle from squishing on small screens */
     transition: border-color 0.2s;
 }
 
-/* 3. The Inner Dot (Hidden by default) * /
+/* 3. The Inner Dot (Hidden by default) */
 .radio-check::after {
     content: ''; 
     width: 10px; 
@@ -292,98 +291,21 @@ select { appearance: none; -webkit-appearance: none; background: white; }
     background: var(--primary);
     border-radius: 50%; 
     
-    /* Start hidden (scale 0) for a nice pop-in effect * /
+    /* Start hidden (scale 0) for a nice pop-in effect */
     transform: scale(0);
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* 4. When Checked Logic * /
-/* Change Border Color * /
+/* 4. When Checked Logic */
+/* Change Border Color */
 .radio-card input:checked + .radio-content + .radio-check { 
     border-color: var(--primary); 
 }
 
-/* Show Inner Dot (Scale up to 1) * /
+/* Show Inner Dot (Scale up to 1) */
 .radio-card input:checked + .radio-content + .radio-check::after {
     transform: scale(1);
 }
-*/
-
-/* --- RADIO CARD COMPONENT (With Icons) --- */
-
-/* 1. Main Card Container */
-.radio-card {
-    flex: 1; 
-    border: 1px solid var(--slate-200); 
-    border-radius: 12px; 
-    padding: 12px;
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    /* Changed to flex-start so we can control spacing manually */
-    justify-content: flex-start; 
-    gap: 12px; /* Spacing between Icon, Text, and Check */
-    transition: all 0.2s ease;
-    background: white;
-}
-
-/* Hover & Active States */
-.radio-card:hover { border-color: var(--primary); background: var(--primary-light); }
-.radio-card:has(input:checked) { border-color: var(--primary); background: var(--primary-light); }
-
-.radio-card input { display: none; }
-
-/* 2. The New Icon Box */
-.radio-icon {
-    width: 36px; height: 36px;
-    background: var(--slate-100);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--slate-600);
-    transition: all 0.2s;
-}
-
-/* Icon changes color when selected */
-.radio-card:has(input:checked) .radio-icon {
-    background: white;
-    color: var(--primary);
-}
-
-/* 3. Text Content Wrapper */
-.radio-content { 
-    display: flex; flex-direction: column; 
-    flex: 1; /* Pushes the Checkmark to the far right */
-}
-.radio-title { font-weight: 700; font-size: 0.9rem; color: var(--slate-800); }
-.radio-sub { font-size: 0.75rem; color: var(--slate-500); }
-
-/* 4. The Check Circle (Fixed Alignment) */
-.radio-check {
-    width: 20px; height: 20px; 
-    border: 2px solid var(--slate-300); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; 
-    flex-shrink: 0;
-    transition: border-color 0.2s;
-}
-
-.radio-check::after {
-    content: ''; width: 10px; height: 10px; 
-    background: var(--primary); border-radius: 50%; 
-    transform: scale(0); 
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* 5. When Checked Logic */
-/* Note: We added .radio-icon to the sibling selector chain */
-.radio-card input:checked + .radio-icon + .radio-content + .radio-check { 
-    border-color: var(--primary); 
-}
-
-.radio-card input:checked + .radio-icon + .radio-content + .radio-check::after { 
-    transform: scale(1); 
-}
-
-
 
 .btn-upi {
     display: flex; align-items: center; justify-content: center; gap: 10px;
