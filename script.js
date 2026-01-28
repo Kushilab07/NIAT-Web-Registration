@@ -206,30 +206,24 @@ selects.forEach(select => {
                 // BUILD DETAILED FIELDS
                 const fields = [
                     { label: "Branch", val: document.getElementById('branch-select').value },
-                    
-                    // --- NEW: Passport Photo ---
-                    { label: "Passport Photo", val: photoRes.data, type: 'image' },
-
                     { label: "Student Name", val: document.getElementsByName('studentName')[0].value },
                     { label: "Father's Name", val: document.getElementsByName('fatherName')[0].value },
                     { label: "Email", val: document.getElementById('email-field').value },
                     { label: "Contact", val: document.getElementsByName('contact')[0].value },
-                    
                     { label: "Village/Town", val: document.getElementsByName('village')[0].value },
                     { label: "Post Office", val: document.getElementsByName('po')[0].value },
                     { label: "District", val: document.getElementsByName('district')[0].value },
                     { label: "PIN Code", val: document.getElementsByName('pin')[0].value },
-                    
                     { label: "Qualification", val: document.getElementsByName('qualification')[0].value },
-
+                    { label: "Present Activity", val: document.getElementsByName('activity')[0].value },
+                    { label: "Selected Course", val: selectedCourse },
+                    // --- NEW: Passport Photo ---
+                    { label: "Passport Photo", val: photoRes.data, type: 'image' },
                     // --- NEW: Qualification Doc ---
-                    { label: "Qual. Document", val: docRes.data, type: 'file', fileName: docRes.name },
-
-                    { label: "Activity", val: document.getElementsByName('activity')[0].value },
-                    { label: "Course Applied", val: selectedCourse },
-                    
+                    { label: "Last Qualification Doc", val: docRes.data, type: 'file', fileName: docRes.name },
+                      
                     { label: "Payment Mode", val: payMode },
-                    { label: "Payment Proof", val: payRes.data, type: 'image' } 
+                    { label: "Payment Screenshot", val: payRes.data, type: 'image' } 
                 ];
 
                 let htmlTable = `<table class="preview-table">`;
