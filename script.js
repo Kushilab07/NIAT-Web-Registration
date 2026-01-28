@@ -240,48 +240,52 @@ selects.forEach(select => {
           finalSubmitBtn.addEventListener('click', (e) => {
             e.preventDefault();
 
-            // --- A. SETUP ANIMATION COORDINATES ---
-            // 1. Get current position of the button
-            const rect = finalSubmitBtn.getBoundingClientRect();
+            // --- A. FREEZE LAYOUT (Prevents Jumping Lines) ---
+            const modalContent = document.querySelector('.modal-content');
+            // Lock the height to its current pixel value
+            modalContent.style.height = modalContent.offsetHeight + 'px'; 
             
-            // 2. Lock dimensions and position instantly so it doesn't jump
+            // --- B. SETUP BUTTON COORDINATES ---
+            const rect = finalSubmitBtn.getBoundingClientRect();
             finalSubmitBtn.style.width = rect.width + 'px';
             finalSubmitBtn.style.height = rect.height + 'px';
             finalSubmitBtn.style.left = rect.left + 'px';
             finalSubmitBtn.style.top = rect.top + 'px';
-            finalSubmitBtn.style.position = 'fixed'; // Float above everything
+            finalSubmitBtn.style.position = 'fixed'; 
             
-            // 3. Force browser to recognize the lock (Reflow)
-            void finalSubmitBtn.offsetWidth; 
+            void finalSubmitBtn.offsetWidth; // Force Reflow
 
-            // --- B. START TRANSITION ---
+            // --- C. START TRANSITION ---
             // 1. Fade out background
             document.querySelector('.main-wrapper').classList.add('page-fade-out');
             document.querySelector('.bg-pattern').style.opacity = '0';
             
-            // 2. Hide modal content
+            // 2. Blur and Fade out modal internals
             document.querySelector('.modal-header').classList.add('modal-content-fade');
             document.querySelector('#preview-data').classList.add('modal-content-fade');
-            document.querySelector('#edit-btn-action').classList.add('modal-content-fade');
-            document.querySelector('.modal-content').style.background = 'transparent';
-            document.querySelector('.modal-content').style.boxShadow = 'none';
+            // Select the Edit button specifically
+            const editBtnEl = document.getElementById('edit-btn-action');
+            if(editBtnEl) editBtnEl.classList.add('modal-content-fade');
 
-            // 3. Trigger the Move to Center (and shape change)
+            // 3. Make the box container transparent so only the button remains
+            modalContent.style.background = 'transparent';
+            modalContent.style.boxShadow = 'none';
+            modalContent.style.border = 'none';
+
+            // 4. Trigger the Button Move
             finalSubmitBtn.classList.add('btn-animating');
             
-            // 4. Set final coordinates (Center Screen)
-            // We use setTimeout to allow the class to apply first
             requestAnimationFrame(() => {
                 finalSubmitBtn.style.top = '50%';
                 finalSubmitBtn.style.left = '50%';
-                finalSubmitBtn.style.transform = 'translate(-50%, -50%)'; // Perfect center alignment
-                finalSubmitBtn.style.width = '60px';  // Shrink to circle
-                finalSubmitBtn.style.height = '60px'; // Shrink to circle
+                finalSubmitBtn.style.transform = 'translate(-50%, -50%)'; 
+                finalSubmitBtn.style.width = '60px';  
+                finalSubmitBtn.style.height = '60px'; 
             });
 
             finalSubmitBtn.disabled = true;
 
-            // --- C. DATA UPLOAD ---
+            // --- D. DATA UPLOAD ---
             const payMode = document.querySelector('input[name="payMode"]:checked').value;
             const filePromises = [
                 getFileData('photoFile'), 
@@ -326,7 +330,7 @@ selects.forEach(select => {
                     method: 'POST', body: JSON.stringify(formData)
                 }).then(response => response.json());
 
-                // Timer (2.5 Seconds for animation to feel "Slow" and smooth)
+                // Timer
                 const timerPromise = new Promise(resolve => setTimeout(resolve, 2500));
 
                 Promise.all([uploadPromise, timerPromise])
@@ -334,23 +338,18 @@ selects.forEach(select => {
                     window.removeEventListener('beforeunload', preventLeave);
                     
                     if(data.status === 'success') {
-                        // --- D. SUCCESS ANIMATION ---
-                        
-                        // 1. Stop Spinner
+                        // --- E. SUCCESS ANIMATION ---
                         document.getElementById('final-spinner').style.display = 'none';
-                        
-                        // 2. Show Green Tick
                         const checkIcon = document.getElementById('btn-check');
-                        checkIcon.classList.remove('hidden-check');
-                        checkIcon.classList.add('checkmark-show');
-                        
-                        // 3. Turn Button Green
+                        if(checkIcon) {
+                            checkIcon.classList.remove('hidden-check');
+                            checkIcon.classList.add('checkmark-show');
+                        }
                         finalSubmitBtn.classList.add('btn-success-state');
 
-                        // 4. Wait 1 second to view the Tick, then switch pages
                         setTimeout(() => {
-                            previewModal.classList.add('hidden'); // Hide modal
-                            document.querySelector('.main-wrapper').classList.remove('page-fade-out'); // Restore BG
+                            previewModal.classList.add('hidden'); 
+                            document.querySelector('.main-wrapper').classList.remove('page-fade-out'); 
                             document.querySelector('.bg-pattern').style.opacity = '0.6';
 
                             document.getElementById('form-section').classList.add('hidden');
@@ -371,7 +370,6 @@ selects.forEach(select => {
             });
           });
       }
-
 
 
       function handleError(msg) {
