@@ -353,9 +353,13 @@ textarea.input-field { height: 100px; resize: vertical; }
 }
 
 .modal-content-fade {
-    opacity: 0;
-    transition: opacity 0.5s ease;
+    opacity: 0 !important;
+    filter: blur(10px); /* Blurs the text out */
+    transform: scale(0.98); /* Slight shrink for effect */
+    transition: all 0.5s ease;
+    pointer-events: none;
 }
+
 
 /* 2. The Moving Button State */
 .btn-animating {
