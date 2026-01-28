@@ -170,7 +170,7 @@ selects.forEach(select => {
       const editBtnAction = document.getElementById('edit-btn-action');
       const finalSpinner = document.getElementById('final-spinner');
 
-      // 1. PREVIEW BUTTON CLICK
+            // 1. PREVIEW BUTTON CLICK
       if (form) {
           form.addEventListener('submit', function(e) {
             e.preventDefault(); 
@@ -190,10 +190,14 @@ selects.forEach(select => {
                 alert("Please upload the Payment Screenshot."); return;
             }
 
-            // READ PAYMENT IMAGE FOR PREVIEW (Async)
-            const payFilePromise = (payMode === 'Online') ? getFileData('payFile') : Promise.resolve({data:null});
+            // --- READ ALL FILES (Photo, Doc, Payment) ---
+            const photoPromise = getFileData('photoFile');
+            const docPromise = getFileData('docFile');
+            // Only read payment file if mode is Online
+            const payPromise = (payMode === 'Online') ? getFileData('payFile') : Promise.resolve({data:null});
 
-            payFilePromise.then(payFileResult => {
+            // Wait for all files to be read
+            Promise.all([photoPromise, docPromise, payPromise]).then(([photoRes, docRes, payRes]) => {
                 
                 // Helper to get course
                 let selectedCourse = "";
@@ -202,34 +206,51 @@ selects.forEach(select => {
                 // BUILD DETAILED FIELDS
                 const fields = [
                     { label: "Branch", val: document.getElementById('branch-select').value },
+                    
+                    // --- NEW: Passport Photo ---
+                    { label: "Passport Photo", val: photoRes.data, type: 'image' },
+
                     { label: "Student Name", val: document.getElementsByName('studentName')[0].value },
                     { label: "Father's Name", val: document.getElementsByName('fatherName')[0].value },
                     { label: "Email", val: document.getElementById('email-field').value },
                     { label: "Contact", val: document.getElementsByName('contact')[0].value },
                     
-                    // SPLIT ADDRESS
                     { label: "Village/Town", val: document.getElementsByName('village')[0].value },
                     { label: "Post Office", val: document.getElementsByName('po')[0].value },
                     { label: "District", val: document.getElementsByName('district')[0].value },
                     { label: "PIN Code", val: document.getElementsByName('pin')[0].value },
                     
                     { label: "Qualification", val: document.getElementsByName('qualification')[0].value },
+
+                    // --- NEW: Qualification Doc ---
+                    { label: "Qual. Document", val: docRes.data, type: 'file', fileName: docRes.name },
+
                     { label: "Activity", val: document.getElementsByName('activity')[0].value },
                     { label: "Course Applied", val: selectedCourse },
                     
                     { label: "Payment Mode", val: payMode },
-                    { label: "Payment Proof", val: payFileResult.data, isImage: true } // Image Logic
+                    { label: "Payment Proof", val: payRes.data, type: 'image' } 
                 ];
 
                 let htmlTable = `<table class="preview-table">`;
                 fields.forEach(field => {
+                    // Only show rows that have values
                     if(field.val && field.val !== "") {
                         let content = field.val;
-                        // If it's the image field and we have data
-                        if(field.isImage && field.val) {
-                             content = `<img src="${field.val}" class="payment-proof-img" onclick="window.open('${field.val}')" title="Click to zoom">`;
-                        } else if (field.isImage) {
-                            content = "Not Applicable";
+                        
+                        // 1. IMAGE HANDLING (Photo & Payment)
+                        if (field.type === 'image') {
+                            content = `<img src="${field.val}" class="payment-proof-img" onclick="window.open('${field.val}')" title="Click to view">`;
+                        } 
+                        // 2. GENERIC FILE HANDLING (Qual Doc - could be PDF or Image)
+                        else if (field.type === 'file') {
+                            if(field.val.startsWith('data:image')) {
+                                // If it's an image, show thumbnail
+                                content = `<img src="${field.val}" class="payment-proof-img" onclick="window.open('${field.val}')" title="Click to view">`;
+                            } else {
+                                // If it's a PDF, show a button
+                                content = `<a href="${field.val}" target="_blank" class="btn-secondary-sm" style="text-decoration:none;">View PDF</a>`;
+                            }
                         }
 
                         htmlTable += `<tr>
@@ -245,6 +266,7 @@ selects.forEach(select => {
             });
           });
       }
+
 
       // 2. CLOSE MODAL LISTENERS
       [editBtn, editBtnAction].forEach(btn => {
