@@ -371,20 +371,22 @@ selects.forEach(select => {
                         }
                         finalSubmitBtn.classList.add('btn-success-state');
 
-                        // 4. Wait 1.2s to view the Tick, then switch pages
+                                                // 4. Wait 1.2s to view the Tick, then switch pages
                         setTimeout(() => {
                             previewModal.classList.add('hidden'); 
                             
                             // HIDE the main form wrapper completely
+                            // (This prevents the form from showing behind the success page)
                             document.querySelector('.main-wrapper').style.display = 'none';
 
                             // SHOW Success View in Full Screen
                             const successView = document.getElementById('success-view');
                             successView.classList.remove('hidden');
-                            successView.classList.add('fullscreen-success'); // Add Fullscreen class
+                            successView.classList.add('fullscreen-success'); // <--- This class makes it full screen
                             
                             if(serialDisplay) serialDisplay.textContent = data.serial;
                         }, 1200);
+
 
 
                     } else {
