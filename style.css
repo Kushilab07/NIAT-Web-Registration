@@ -358,6 +358,8 @@ textarea.input-field { height: 100px; resize: vertical; }
     transform: scale(0.98); /* Slight shrink for effect */
     transition: all 0.5s ease;
     pointer-events: none;
+    border: none !important; /* <--- ADD THIS LINE */
+    box-shadow: none !important; /* <--- ADD THIS LINE */
 }
 
 
